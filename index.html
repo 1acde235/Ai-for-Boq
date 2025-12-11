@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- SEO & Social Sharing -->
+    <title>ConstructAI - AI Quantity Surveyor & Payment Certs</title>
+    <meta name="description" content="Automated Construction Estimating Worldwide. Upload PDF/DWG, get Excel BOQ with Formulas. Supports Global Standards.">
+    
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://construct-ai.com/">
+    <meta property="og:title" content="ConstructAI - 90% Faster Estimating">
+    <meta property="og:description" content="The first AI Quantity Surveyor built for the World. Get precise Takeoffs and Payment Certificates in minutes. Try for free.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=1200&auto=format&fit=crop">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="ConstructAI - Automated Takeoffs">
+    <meta property="twitter:description" content="Generate professional Bill of Quantities and Payment Certificates instantly using AI.">
+    <meta property="twitter:image" content="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=1200&auto=format&fit=crop">
+
+    <!-- Custom Favicon (SVG) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 20 V 70 C 15 90, 85 90, 85 70 V 20' stroke='%230369a1' stroke-width='8' stroke-linecap='round' /%3E%3Cpath d='M10 20 H 90' stroke='%230369a1' stroke-width='8' stroke-linecap='round' /%3E%3Cpath d='M35 20 V 85' stroke='%230ea5e9' stroke-width='6' /%3E%3Cpath d='M65 20 V 85' stroke='%230ea5e9' stroke-width='6' /%3E%3Cpath d='M35 80 L 50 50 L 65 80' stroke='%23f59e0b' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            colors: {
+              brand: {
+                50: '#f0f9ff',
+                100: '#e0f2fe',
+                200: '#bae6fd',
+                300: '#7dd3fc',
+                400: '#38bdf8',
+                500: '#0ea5e9',
+                600: '#0284c7',
+                700: '#0369a1',
+                800: '#075985',
+                900: '#0c4a6e',
+              }
+            },
+            animation: {
+              'scan-vertical': 'scanVertical 3s ease-in-out infinite',
+              'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'float': 'float 6s ease-in-out infinite',
+            },
+            keyframes: {
+              scanVertical: {
+                '0%': { top: '0%', opacity: '0' },
+                '10%': { opacity: '1' },
+                '90%': { opacity: '1' },
+                '100%': { top: '100%', opacity: '0' },
+              },
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-20px)' },
+              }
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8fafc;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      /* Custom scrollbar for table - Bluebeam Style */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #e2e8f0; 
+        border-left: 1px solid #cbd5e1;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #64748b; 
+        border: 2px solid #e2e8f0;
+        border-radius: 0; /* Square scrollbar */
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #475569; 
+      }
+      
+      .blueprint-grid {
+        background-size: 40px 40px;
+        background-image:
+          linear-gradient(to right, rgba(56, 189, 248, 0.1) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(56, 189, 248, 0.1) 1px, transparent 1px);
+      }
+
+      /* PRINT STYLES FOR OFFICIAL DOCUMENTS */
+      @media print {
+        @page { margin: 10mm; size: A4; }
+        
+        /* Hide UI Elements */
+        nav, 
+        button, 
+        .no-print, 
+        /* Hide Scrollbars */
+        ::-webkit-scrollbar,
+        /* Hide File Upload/Sidebar/Tabs */
+        .overflow-x-auto > button, 
+        .sticky.top-0 {
+          display: none !important;
+        }
+
+        /* Reset Layout */
+        body, #root, .flex, .h-full, .min-h-screen {
+          height: auto !important;
+          min-height: 0 !important;
+          overflow: visible !important;
+          display: block !important;
+        }
+
+        /* Table Styling */
+        table {
+          width: 100% !important;
+          font-size: 10px !important;
+          border-collapse: collapse !important;
+        }
+        th, td {
+          border: 1px solid #cbd5e1 !important;
+          padding: 4px !important;
+        }
+        
+        /* Inputs as Text */
+        input {
+          border: none !important;
+          background: transparent !important;
+          padding: 0 !important;
+          font-weight: bold;
+          color: black !important;
+        }
+        
+        /* Ensure Colors Print */
+        .bg-slate-900 { background-color: #0f172a !important; color: white !important; }
+        .bg-brand-50 { background-color: #f0f9ff !important; }
+        
+        /* Hide Empty/Collapsible UI */
+        .group:hover { background-color: transparent !important; }
+        
+        /* Force Breaks */
+        .break-inside-avoid { break-inside: avoid; }
+      }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.1",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.1/",
+    "react/": "https://esm.sh/react@^19.2.1/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.560.0",
+    "xlsx": "https://esm.sh/xlsx@^0.18.5",
+    "recharts": "https://esm.sh/recharts@^3.5.1",
+    "jszip": "https://esm.sh/jszip@^3.10.1",
+    "vite": "https://esm.sh/vite@^7.2.7",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
