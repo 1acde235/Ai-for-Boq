@@ -119,8 +119,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onSuccess, 
                       credits: credits, 
                       tx_ref: referenceId,
                       currency: 'ETB', 
-                      email: 'guest@construct-ai.com', 
-                      firstName: 'Guest',
+                      email: 'saynotoracism124@gmail.com', 
+                      firstName: 'Amanuel',
                       lastName: 'User'
                   }),
               });

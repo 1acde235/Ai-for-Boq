@@ -43,8 +43,8 @@ export default async function handler(req, res) {
       const payload = {
         amount: amount.toString(),
         currency: 'ETB',
-        email: email || 'guest@construct-ai.com',
-        first_name: firstName || 'Guest',
+        email: email || 'saynotoracism124@gmail.com',
+        first_name: firstName || 'Amanuel',
         last_name: lastName || 'User',
         tx_ref: tx_ref || `TX-${Date.now()}`,
         return_url: returnUrl,
