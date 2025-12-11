@@ -119,30 +119,34 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onSuccess, 
                       credits: credits, 
                       tx_ref: referenceId,
                       currency: 'ETB', 
-                      email: 'saynotoracism124@gmail.com', 
-                      firstName: 'Amanuel',
+                      email: 'guest@construct-ai.com', 
+                      firstName: 'Guest',
                       lastName: 'User'
                   }),
               });
 
-              // Robust Content-Type checking
               const contentType = response.headers.get("content-type");
-              if (contentType && contentType.indexOf("application/json") !== -1) {
+              const isJson = contentType && contentType.indexOf("application/json") !== -1;
+
+              if (isJson) {
                   const data = await response.json();
-                  if (data.success && data.checkout_url) {
+                  if (response.ok && data.success && data.checkout_url) {
                       window.location.href = data.checkout_url;
                   } else {
-                      throw new Error(data.error || "Failed to initialize Chapa payment");
+                      // Backend returned a specific error message
+                      throw new Error(data.error || data.message || "Payment initialization failed.");
                   }
               } else {
-                  // Fallback for non-JSON response (likely HTML 500 error from Vercel or 404)
+                  // Fallback for non-JSON response (likely HTML 500/404 error from Vercel)
                   const text = await response.text();
                   console.error("Payment Gateway Error (Non-JSON):", text);
-                  // Provide user-friendly error but log the raw text
+                  
                   if (response.status === 404) {
-                      throw new Error("Payment service unavailable (404). Please try again later.");
+                      throw new Error("Payment API not found (404). Check Vercel deployment.");
+                  } else if (response.status === 500) {
+                      throw new Error("Server Error (500). Please check Vercel logs.");
                   }
-                  throw new Error(`Payment gateway connection failed (${response.status}). Please contact support.`);
+                  throw new Error(`Connection failed (${response.status}). Please try again.`);
               }
           } catch (apiErr: any) {
              console.error(apiErr);

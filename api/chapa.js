@@ -1,5 +1,10 @@
 
+import https from 'https';
+
 export default async function handler(req, res) {
+  // Debug Log
+  console.log(`[Chapa API] Request received: ${req.method}`);
+
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -13,11 +18,11 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Get Key
+  // 1. CHECK API KEY
   const CHAPA_KEY = process.env.CHAPA_SECRET_KEY;
   if (!CHAPA_KEY) {
-      console.error("CRITICAL: CHAPA_SECRET_KEY is missing in Environment Variables.");
-      return res.status(500).json({ error: "Payment configuration missing on server." });
+      console.error("[Chapa API] Error: CHAPA_SECRET_KEY is missing in Vercel Environment Variables.");
+      return res.status(500).json({ error: "Server Error: CHAPA_SECRET_KEY is not configured." });
   }
 
   if (req.method !== 'POST') {
@@ -31,20 +36,21 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Amount is required' });
       }
 
-      // 1 Credit = 5000 ETB (Default)
+      // Calculate credits
       const creditsToAdd = credits ? credits : Math.floor(Number(amount) / 5000);
 
       // Construct Return URL
       const protocol = req.headers['x-forwarded-proto'] || 'https';
       const host = req.headers.host;
-      const origin = `${protocol}://${host}`;
+      const origin = host ? `${protocol}://${host}` : 'https://construct-ai.com';
       const returnUrl = `${origin}/?payment_success=true&amount=${creditsToAdd}`; 
 
-      const payload = {
+      // Prepare Payload
+      const payload = JSON.stringify({
         amount: amount.toString(),
         currency: 'ETB',
-        email: email || 'saynotoracism124@gmail.com',
-        first_name: firstName || 'Amanuel',
+        email: email || 'guest@construct-ai.com',
+        first_name: firstName || 'Guest',
         last_name: lastName || 'User',
         tx_ref: tx_ref || `TX-${Date.now()}`,
         return_url: returnUrl,
@@ -52,35 +58,69 @@ export default async function handler(req, res) {
           title: "ConstructAI Credits",
           description: `Payment for ${creditsToAdd} Credits`
         }
-      };
-
-      console.log("Sending request to Chapa...");
-
-      // Use Node.js native fetch (Node 18+)
-      const chapaRes = await fetch('https://api.chapa.co/v1/transaction/initialize', {
-          method: 'POST',
-          headers: {
-              'Authorization': `Bearer ${CHAPA_KEY}`,
-              'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(payload)
       });
 
-      const data = await chapaRes.json();
+      const options = {
+        hostname: 'api.chapa.co',
+        port: 443,
+        path: '/v1/transaction/initialize',
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${CHAPA_KEY}`,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(payload)
+        }
+      };
 
-      if (!chapaRes.ok) {
-          console.error("Chapa API Failed:", data);
+      console.log(`[Chapa API] Sending request to Chapa... (${options.hostname})`);
+
+      // 2. MAKE HTTPS REQUEST (Native Node)
+      const response = await new Promise((resolve, reject) => {
+        const apiReq = https.request(options, (apiRes) => {
+          let data = '';
+          apiRes.on('data', (chunk) => {
+            data += chunk;
+          });
+          apiRes.on('end', () => {
+            resolve({
+              statusCode: apiRes.statusCode,
+              body: data
+            });
+          });
+        });
+
+        apiReq.on('error', (e) => {
+          reject(e);
+        });
+
+        apiReq.write(payload);
+        apiReq.end();
+      });
+
+      console.log(`[Chapa API] Response Status: ${response.statusCode}`);
+
+      // 3. PARSE RESPONSE
+      let result;
+      try {
+          result = JSON.parse(response.body);
+      } catch (e) {
+          console.error("[Chapa API] Failed to parse JSON response:", response.body);
+          return res.status(502).json({ error: "Invalid response from Payment Gateway (Not JSON)" });
+      }
+
+      if (response.statusCode !== 200 || result.status !== 'success') {
+          console.error("[Chapa API] Gateway Error:", result);
           return res.status(400).json({ 
               success: false, 
-              error: data.message || "Chapa initialization failed" 
+              error: result.message || "Payment initialization failed",
+              details: result
           });
       }
 
-      console.log("Chapa initialized successfully");
-      return res.status(200).json({ success: true, checkout_url: data.data.checkout_url });
+      return res.status(200).json({ success: true, checkout_url: result.data.checkout_url });
 
   } catch (err) {
-      console.error("Chapa Handler Exception:", err);
-      return res.status(500).json({ error: "Internal Server Error during payment initialization." });
+      console.error("[Chapa API] Internal Exception:", err);
+      return res.status(500).json({ error: "Internal Server Error: " + err.message });
   }
 }
