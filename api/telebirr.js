@@ -1,7 +1,7 @@
 
 // This file acts as a Vercel Serverless Function (Backend)
-const crypto = require('crypto');
-const https = require('https');
+import crypto from 'crypto';
+import https from 'https';
 
 // --- CONFIGURATION ---
 const APP_ID = process.env.TELEBIRR_APP_ID;
@@ -10,9 +10,9 @@ const SHORT_CODE = process.env.TELEBIRR_SHORT_CODE;
 const NOTIFY_URL = "https://your-domain.com/api/telebirr-callback"; 
 const TELEBIRR_API_URL = "https://app.ethiotelecom.et/telebirr/api/pay";
 
-module.exports = async (req, res) => {
-  // CORS Headers for local development
-  res.setHeader('Access-Control-Allow-Credentials', true);
+export default async function handler(req, res) {
+  // CORS Headers
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
@@ -103,7 +103,13 @@ module.exports = async (req, res) => {
         }, (res) => {
             let body = '';
             res.on('data', chunk => body += chunk);
-            res.on('end', () => resolve(JSON.parse(body)));
+            res.on('end', () => {
+                try {
+                    resolve(JSON.parse(body));
+                } catch(e) {
+                    reject(e);
+                }
+            });
         });
         req.on('error', reject);
         req.write(JSON.stringify(data));
@@ -128,4 +134,4 @@ module.exports = async (req, res) => {
     console.error("Backend Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
-};
+}

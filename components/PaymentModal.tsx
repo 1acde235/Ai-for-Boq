@@ -125,16 +125,30 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onSuccess, 
                   }),
               });
 
-              const data = await response.json();
-
-              if (data.success && data.checkout_url) {
-                  window.location.href = data.checkout_url;
+              // Robust Content-Type checking
+              const contentType = response.headers.get("content-type");
+              if (contentType && contentType.indexOf("application/json") !== -1) {
+                  const data = await response.json();
+                  if (data.success && data.checkout_url) {
+                      window.location.href = data.checkout_url;
+                  } else {
+                      throw new Error(data.error || "Failed to initialize Chapa payment");
+                  }
               } else {
-                  throw new Error(data.error || "Failed to initialize Chapa payment");
+                  // Fallback for non-JSON response (likely HTML 500 error from Vercel or 404)
+                  const text = await response.text();
+                  console.error("Payment Gateway Error (Non-JSON):", text);
+                  // Provide user-friendly error but log the raw text
+                  if (response.status === 404) {
+                      throw new Error("Payment service unavailable (404). Please try again later.");
+                  }
+                  throw new Error(`Payment gateway connection failed (${response.status}). Please contact support.`);
               }
-          } catch (apiErr) {
+          } catch (apiErr: any) {
              console.error(apiErr);
-             throw new Error("Could not connect to payment gateway.");
+             setError(apiErr.message || "Could not connect to payment gateway.");
+          } finally {
+             setProcessing(false);
           }
           return;
       }
@@ -415,4 +429,3 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onSuccess, 
       </div>
     </div>
   );
-};
